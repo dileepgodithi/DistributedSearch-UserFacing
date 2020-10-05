@@ -19,7 +19,7 @@ public class Application implements Watcher {
         ServiceRegistry serviceRegistry = new ServiceRegistry(zooKeeper, ServiceRegistry.COORDINATORS_REGISTRY_ZNODE);
         SearchController searchController = new SearchController(serviceRegistry);
         WebServer webServer = new WebServer(serverPort, searchController);
-        //webServer.start();
+        webServer.startServer();
 
         application.run();
         application.close();
