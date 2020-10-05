@@ -1,7 +1,9 @@
 import cluster.management.ServiceRegistry;
+import networking.WebServer;
 import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
+import search.SearchController;
 
 import java.io.IOException;
 
@@ -15,7 +17,9 @@ public class Application implements Watcher {
         ZooKeeper zooKeeper = application.connectToZookeeper();
 
         ServiceRegistry serviceRegistry = new ServiceRegistry(zooKeeper, ServiceRegistry.COORDINATORS_REGISTRY_ZNODE);
-
+        SearchController searchController = new SearchController(serviceRegistry);
+        WebServer webServer = new WebServer(serverPort, searchController);
+        //webServer.start();
 
         application.run();
         application.close();
@@ -49,7 +53,6 @@ public class Application implements Watcher {
                         zooKeeper.notifyAll();
                     }
                 }
-
         }
     }
 }
