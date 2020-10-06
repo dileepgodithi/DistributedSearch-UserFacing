@@ -5,6 +5,7 @@ import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpServer;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.http.HttpResponse;
@@ -13,6 +14,7 @@ import java.util.concurrent.Executors;
 public class WebServer {
     private static final String STATUS_ENDPOINT = "/status";
     private static final String HOME_PAGE_ENDPOINT = "/";
+    private static final String UI_BASE_DIR = "/view/";
     private final int port;
     private final Controller controller;
     private HttpServer server;
@@ -36,14 +38,46 @@ public class WebServer {
 
         statusContext.setHandler(this::handleStatusRequest);
         taskContext.setHandler(this::handleTaskRequest);
-        homePageContext.setHandler(this::handleHomeUIAssetRequest);
+        homePageContext.setHandler(this::handleUIAssetRequest);
 
         server.setExecutor(Executors.newFixedThreadPool(8));
         server.start();
     }
 
-    private void handleHomeUIAssetRequest(HttpExchange httpExchange){
+    private void handleUIAssetRequest(HttpExchange httpExchange) throws IOException {
+        if(!httpExchange.getRequestMethod().equalsIgnoreCase("get")){
+            httpExchange.close();
+            return;
+        }
 
+        byte[] response;
+        String asset = httpExchange.getRequestURI().getPath();
+        if(asset.equals(HOME_PAGE_ENDPOINT)){
+            response = readUIAsset(UI_BASE_DIR + "index.html");
+        }
+        else {
+            response = readUIAsset(asset);
+        }
+        addContentType(asset, httpExchange);
+        sendResponse(response, httpExchange);
+    }
+
+    private byte[] readUIAsset(String asset) throws IOException {
+        InputStream assetStream = getClass().getResourceAsStream(asset);
+        if(assetStream == null)
+            return new byte[]{};
+        return assetStream.readAllBytes();
+    }
+
+    private void addContentType(String asset, HttpExchange exchange){
+        String contentType = "text/html";
+        if(asset.endsWith("js")){
+            contentType = "text/javascript";
+        }
+        else if(asset.endsWith("css")){
+            contentType = "text/css";
+        }
+        exchange.getResponseHeaders().add("Content-Type", contentType);
     }
 
     private void handleTaskRequest(HttpExchange httpExchange) throws IOException {
