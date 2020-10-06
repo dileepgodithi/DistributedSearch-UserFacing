@@ -7,6 +7,7 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 public class ServiceRegistry implements Watcher {
     public static final String WORKERS_REGISTRY_ZNODE = "/workers_service_registry";
@@ -15,10 +16,12 @@ public class ServiceRegistry implements Watcher {
     private String currentZnode = null;
     private List<String> allServiceAddresses = null;
     private final String serviceRegistryZnode;
+    private final Random random;
 
     public ServiceRegistry(ZooKeeper zooKeeper, String serviceRegistryZnode){
         this.zooKeeper = zooKeeper;
         this.serviceRegistryZnode = serviceRegistryZnode;
+        this.random = new Random();
         createServiceRegistryZnode();
     }
 
@@ -67,12 +70,25 @@ public class ServiceRegistry implements Watcher {
         }
     }
 
-    public List<String> getAllServiceAddresses() throws KeeperException, InterruptedException {
+    public synchronized List<String> getAllServiceAddresses() throws KeeperException, InterruptedException {
         if(allServiceAddresses == null)
             updateAddresses();
 
         return allServiceAddresses;
     }
+
+    public synchronized String getRandomServiceAddress() throws KeeperException, InterruptedException {
+        if(allServiceAddresses == null)
+            updateAddresses();
+        if(!allServiceAddresses.isEmpty()){
+            int randomIndex = random.nextInt(allServiceAddresses.size());
+            return allServiceAddresses.get(randomIndex);
+        }
+        else {
+            return null;
+        }
+    }
+
     private synchronized void updateAddresses() throws KeeperException, InterruptedException {
         List<String> workerZnodes = zooKeeper.getChildren(serviceRegistryZnode, this);
         List<String> addresses = new ArrayList<>();
