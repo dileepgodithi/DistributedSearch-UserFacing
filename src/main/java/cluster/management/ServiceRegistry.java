@@ -78,7 +78,7 @@ public class ServiceRegistry implements Watcher {
     }
 
     public synchronized String getRandomServiceAddress() throws KeeperException, InterruptedException {
-        if(allServiceAddresses == null)
+        //if(allServiceAddresses == null)
             updateAddresses();
         if(!allServiceAddresses.isEmpty()){
             int randomIndex = random.nextInt(allServiceAddresses.size());

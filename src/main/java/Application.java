@@ -21,6 +21,7 @@ public class Application implements Watcher {
         WebServer webServer = new WebServer(serverPort, searchController);
         webServer.startServer();
 
+        System.out.println("Server listening on port: "+serverPort);
         application.run();
         application.close();
     }

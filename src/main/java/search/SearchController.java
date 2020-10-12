@@ -55,7 +55,7 @@ public class SearchController implements Controller {
     }
 
     private List<FrontEndSearchResponse.SearchResultInfo> filterResults(SearchModel.Response searchClusterResponse,
-                                                                        int maxResults,
+                                                                        long maxResults,
                                                                         double minScore){
 
         double maxScore = getMaxScore(searchClusterResponse);
@@ -105,6 +105,7 @@ public class SearchController implements Controller {
                 return SearchModel.Response.getDefaultInstance();
             }
             byte[] responseBody = webClient.sendTask(coordinatorAddress, searchRequest.toByteArray()).join();
+            System.out.println(new String(responseBody));
 
             return SearchModel.Response.parseFrom(responseBody);
 
